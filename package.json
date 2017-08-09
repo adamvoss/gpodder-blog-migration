@@ -1,0 +1,20 @@
+{
+  "name": "blogger2githubreleases",
+  "version": "0.0.0",
+  "description": "An unmaintained script that was used move from blog.gpodder.org (blogger-hosted) to GitHub Releases.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Adam Voss",
+  "license": "CC0-1.0",
+  "dependencies": {
+    "pdc": "^0.2.3",
+    "xml2js": "^0.4.17"
+  },
+  "devDependencies": {
+    "@types/node": "^8.0.17",
+    "@types/xml2js": "^0.4.0"
+  }
+}
