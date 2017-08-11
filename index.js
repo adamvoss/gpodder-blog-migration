@@ -4,10 +4,11 @@ const xml = require("xml2js");
 const parseXml = promisify(xml.parseString)
 const fs = require("fs");
 
+const gPodderReleaseTitleRegEx = /^gPodder ([23].*?)\s.* release/i
 
 function isGpodderRelease(node) {
     const title = node.title[0]._
-    return /^gPodder [[23].* release/i.test(title)
+    return gPodderReleaseTitleRegEx.test(title)
 }
 
 
@@ -27,14 +28,29 @@ async function main(args) {
 
     for (let entry of result.feed.entry.filter(isGpodderRelease)) {
         //console.log(Object.getOwnPropertyNames(entry.content[0]));
+        const title = entry.title[0]._
+        const version = gPodderReleaseTitleRegEx.exec(title)[1]
         const result = await pandoc(entry.content[0]._, entry.content[0].$.type, "markdown_github")
-        
-        console.log(entry.title[0]._)
-        console.log(result);
-        console.log();
+        //console.log(version);
+        //console.log(title);
+        //console.log(updateLinks(retult));
     }
 
     return "done!";
+}
+
+function updateLinks(text) {
+    return replaceSourceLinks(replaceChangeLogLinks(text))
+}
+
+function replaceSourceLinks(text) {
+    return text.replace(/http:\/\/download.berlios.de\/gpodder\/gpodder-(\d+\.\d+(?:\.\d+)?).tar.gz/, "https://github.com/gpodder/gpodder/archive/gpodder-$1.tar.gz")
+        .replace(/http:\/\/gpodder.org\/src\/gpodder-(\d+\.\d+(?:\.\d+)?).tar.gz/, "https://github.com/gpodder/gpodder/archive/gpodder-$1.tar.gz")
+}
+
+function replaceChangeLogLinks(text) {
+    return text.replace(/http:\/\/gpodder.org\/changelog\/(\d+\.\d+(?:\.\d+)?)\/?/g, "https://github.com/gpodder/gpodder/commits/gpodder-$1")
+        .replace(/gpodder.org\/changelog\/(\d+\.\d+(?:\.\d+)?)\/?/, "on the commit log")
 }
 
 if (require.main === module) {
