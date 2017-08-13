@@ -10,6 +10,7 @@
   "author": "Adam Voss",
   "license": "CC0-1.0",
   "dependencies": {
+    "octokat": "^0.9.2",
     "pdc": "^0.2.3",
     "xml2js": "^0.4.17"
   },

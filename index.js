@@ -3,6 +3,7 @@ const pandoc = promisify(require('pdc'));
 const xml = require("xml2js");
 const parseXml = promisify(xml.parseString)
 const fs = require("fs");
+const Octokat = require('octokat');
 
 const gPodderReleaseTitleRegEx = /^gPodder ([23].*?)\s.* release/i
 
@@ -23,17 +24,44 @@ function isGpodderRelease(node) {
 const dir = Object.getOwnPropertyNames
 
 async function main(args) {
+    const octo = new Octokat({ token: require('token.json') });
+    const repo = octo.repos("adamvoss", "gpodder")
+
     const contents = fs.readFileSync("blog-07-30-2017.xml", 'utf8');
     const result = await parseXml(contents)
+
+
+    async function deleteAllReleases() {
+        const releases = await repo.releases.fetchAll()
+        for (let release of releases) {
+            await repo.releases(release.id).remove()
+            console.log(`removed ${release.id}`)
+        }
+    }
+
+    await deleteAllReleases()
 
     for (let entry of result.feed.entry.filter(isGpodderRelease)) {
         //console.log(Object.getOwnPropertyNames(entry.content[0]));
         const title = entry.title[0]._
         const version = gPodderReleaseTitleRegEx.exec(title)[1]
-        const result = await pandoc(entry.content[0]._, entry.content[0].$.type, "markdown_github")
+
+        const date = new Date(entry.published[0]).toISOString();
+        const shortDate = date.substring(0, date.indexOf('T'));
+
+        const text = "_Released " + shortDate + "_\n\n" + updateLinks(await pandoc(entry.content[0]._, entry.content[0].$.type, "markdown_github"))
+        //console.log();
+        //break;
+
+        const result = await repo.releases.create({
+            tag_name: `gpodder-${version}`,
+            name: title,
+            body: text
+        })
         //console.log(version);
         //console.log(title);
-        //console.log(updateLinks(retult));
+        //console.log(text);
+        console.log(result)
     }
 
     return "done!";

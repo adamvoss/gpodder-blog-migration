@@ -1,0 +1,1 @@
+A one-off solution to migrate release announcements from blog.gpodder.org (Blogger-based) to GitHub Releases
